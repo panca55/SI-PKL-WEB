@@ -1,0 +1,50 @@
+/*
+* demo.css
+* File include item demo only specific css only
+******************************************************************************/
+
+.landing {
+  background-image: url(/assets/img/gallery/hero-bg.png);
+  background-size: cover;
+  background-position: center;
+}
+
+.imgss {
+  height: 200px;
+  width: auto;
+  padding: 15px;
+}
+
+.ho:hover {
+  text-shadow: none !important;
+  box-sizing: border-box !important;
+  cursor: pointer !important;
+  transition: all 0.3s ease !important;
+  -webkit-transform: scale(1.1) !important;
+  -ms-transform: scale(1.1) !important;
+  transform: scale(1.1) !important;
+  z-index: 2;
+}
+
+.user-icon-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 60px;
+  /* Sesuaikan ukuran lingkaran */
+  height: 60px;
+  /* Sesuaikan ukuran lingkaran */
+  background-color: #f0f2f5;
+  /* Warna latar belakang lingkaran */
+  border-radius: 50%;
+  /* Membuat elemen berbentuk lingkaran */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  /* Menambahkan bayangan */
+}
+
+.user-icon-wrapper i {
+  font-size: 2rem;
+  /* Sesuaikan ukuran ikon */
+  color: #007bff;
+  /* Warna ikon */
+}

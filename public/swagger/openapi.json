@@ -1,0 +1,61 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "SI-PKL API",
+    "version": "1.0.0",
+    "description": "Dokumentasi API awal (static). Nanti bisa digeneralisir/anotasi per endpoint."
+  },
+  "servers": [
+    { "url": "http://127.0.0.1:8000" }
+  ],
+  "paths": {
+    "/api/student/internship": {
+      "get": {
+        "summary": "Ringkasan PKL & status",
+        "tags": ["Student/Internship"],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "intership": { "type": "object" },
+                    "status": { "type": "string", "enum": ["before","during","after"] },
+                    "presentase_kehadiran": { "type": "number" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/student/internship/absent": {
+      "post": {
+        "summary": "Isi absensi",
+        "tags": ["Student/Internship"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "keterangan": { "type": "string", "enum": ["HADIR","IZIN","SAKIT","ALPHA"] },
+                  "photo": { "type": "string", "description": "Base64 PNG (jika HADIR)" }
+                },
+                "required": ["keterangan"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Absensi tersimpan" },
+          "400": { "description": "Validasi gagal" }
+        }
+      }
+    }
+  }
+}
