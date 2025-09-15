@@ -38,10 +38,10 @@ class ProfileController extends Controller
         $profileData = array_map(function ($value) {
             return $value === null ? 'Belum diisi' : $value;
         }, $profileData);
-        if(request()->wantsJson()){
+        if (request()->wantsJson()) {
             return response()->json([
                 'profile' => $profileData,
-                ]);
+            ]);
         }
         return view('pages.instructor.profile.index', compact('profile'));
     }
@@ -90,8 +90,8 @@ class ProfileController extends Controller
         }
 
         $instructor->save();
-        if($request->wantsJson()){
-            return response()->json(['messafe'=>'Data Instruktur berhasil disimpan']);
+        if ($request->wantsJson()) {
+            return response()->json(['messafe' => 'Data Instruktur berhasil disimpan']);
         }
         return redirect()->route('instructor/profile.index')->with('success', 'Data Instruktur berhasil disimpan.');
     }
@@ -120,13 +120,14 @@ class ProfileController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $user = User::findOrFail($id);
+        $instructor = Instructor::findOrFail($id);
+        $user = User::findOrFail($instructor->user_id);
         // Validasi input
         $request->validate([
-            'username' => 'required|string|max:255|unique:users,name,' . $user->id,
-            'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
-            'password' => 'nullable|string|min:8|confirmed',
-            'foto' => 'image|file|max:2048',
+            'username' => 'sometimes|string|max:255|unique:users,name,' . $user->id,
+            'email' => 'sometimes|string|email|max:255|unique:users,email,' . $user->id,
+            'password' => 'sometimes|string|min:8|confirmed',
+            'foto' => 'nullable|image|file|max:2048',
         ]);
 
         // Update data user
@@ -139,7 +140,6 @@ class ProfileController extends Controller
         $user->save();
 
         // Update data student
-        $instructor = Instructor::where('user_id', $user->id)->firstOrFail();
         $instructor->nip = $request->nip;
         $instructor->nama = $request->nama;
         $instructor->jenis_kelamin = $request->jenis_kelamin;
@@ -164,8 +164,8 @@ class ProfileController extends Controller
         }
 
         $instructor->save();
-        if($request->wantsJson()){
-            return response()->json(['messafe'=>'Data Instruktur berhasil diperbarui']);
+        if ($request->wantsJson()) {
+            return response()->json(['messafe' => 'Data Instruktur berhasil diperbarui']);
         }
 
         return redirect()->route('instructor/profile.index')->with('success', 'Profile berhasil diupdate.');

@@ -105,7 +105,8 @@ class ProfileController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $user = User::findOrFail($id);
+        $corporation = Corporation::where('user_id', $id)->firstOrFail();
+        $user = User::findOrFail($corporation->user_id);
         // Validasi input
         $request->validate([
             'username' => 'required|string|max:255|unique:users,name,' . $user->id,
@@ -124,7 +125,6 @@ class ProfileController extends Controller
         $user->save();
 
         // Update data Perusahaan
-        $corporation = Corporation::where('user_id', $user->id)->firstOrFail();
         $corporation->nama = $request->nama;
         $corporation->slug = $request->slug;
         $corporation->alamat = $request->alamat;

@@ -232,7 +232,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/department/update', [DepartmentController::class, 'update']);
     Route::delete('/department', [DepartmentController::class, 'destroy']);
 });
-
+Route::get('/list-info', [InformationController::class, 'list']);
+Route::get('/info/{id}', [InformationController::class, 'show']);
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/info', [InformationController::class, 'index']);
     Route::post('/info', [InformationController::class, 'store']);

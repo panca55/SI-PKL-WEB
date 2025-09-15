@@ -22,6 +22,11 @@ class InformationController extends Controller
         return view('pages.admin.information.index', compact('informations'));
     }
 
+    public function list()
+    {
+        $informations = Information::all();
+        return response()->json($informations);
+    }
     /**
      * Show the form for creating a new resource.
      */
@@ -53,7 +58,11 @@ class InformationController extends Controller
      */
     public function show(string $id)
     {
-        //
+        $information = Information::findOrFail($id);
+        if (request()->wantsJson()) {
+            return response()->json(['information' => $information], 200);
+        }
+        return view('pages.frontend.mitra.bursa', compact('information'));
     }
 
     /**
