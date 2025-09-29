@@ -157,19 +157,18 @@ class TeacherController extends Controller
     {
         $teacher = Teacher::findOrFail($id);
 
-        // Update data teacher
-        $teacher->nip = $request->nip;
-        $teacher->nama = $request->nama;
-        $teacher->golongan = $request->golongan;
-        $teacher->bidang_studi = $request->bidang_studi;
-        $teacher->pendidikan_terakhir = $request->pendidikan_terakhir;
-        $teacher->jabatan = $request->jabatan;
-        $teacher->jenis_kelamin = $request->jenis_kelamin;
-        $teacher->tanggal_lahir = $request->tanggal_lahir;
-        $teacher->tempat_lahir = $request->tempat_lahir;
-        $teacher->alamat = $request->alamat;
-        $teacher->hp = $request->hp;
-        $teacher->foto = $request->foto;
+        // Update data teacher from input
+        $teacher->nip = $request->input('nip');
+        $teacher->nama = $request->input('nama');
+        $teacher->golongan = $request->input('golongan');
+        $teacher->bidang_studi = $request->input('bidang_studi');
+        $teacher->pendidikan_terakhir = $request->input('pendidikan_terakhir');
+        $teacher->jabatan = $request->input('jabatan');
+        $teacher->jenis_kelamin = $request->input('jenis_kelamin');
+        $teacher->tanggal_lahir = $request->input('tanggal_lahir');
+        $teacher->tempat_lahir = $request->input('tempat_lahir');
+        $teacher->alamat = $request->input('alamat');
+        $teacher->hp = $request->input('hp');
 
         if ($request->hasFile('foto')) {
             if ($teacher->foto) {
@@ -181,9 +180,9 @@ class TeacherController extends Controller
             $file->storeAs('public/teachers-images', $filename);
             $teacher->foto = $filename;
         } else {
-            $teacher->foto = $request->oldImage;
+            $teacher->foto = $request->input('oldImage') ?? $teacher->foto;
         }
-        dd($request->all());
+
         $teacher->save();
         if ($request->wantsJson()) {
             return response()->json(['message' => 'Data guru berhasil diperbarui'], 200);

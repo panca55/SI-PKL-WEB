@@ -63,6 +63,8 @@ Route::prefix('student')
         Route::apiResource('profile', 'ProfileController');
         Route::apiResource('internship', 'InternshipController');
         Route::post('/internship/logbook', 'InternshipController@logbookStore')->name('logbookStore');
+        Route::post('/internship/logbook/{id}', 'InternshipController@update')->name('logbookUpdate');
+        Route::delete('/internship/logbook/{id}', 'InternshipController@destroy')->name('destroy');
         Route::apiResource('logbook', 'LogbookController');
         Route::get('/check-evaluation-availability', 'EvaluationController@checkEvaluationAvailability');
         Route::apiResource('evaluation', 'EvaluationController');
@@ -115,7 +117,7 @@ Route::prefix('instructor')
 /*----------------------------REST API-------------------------------------*/
 // API Login POST
 Route::middleware('api')->post('login', [AuthenticatedSessionController::class, 'store']);
-Route::middleware('auth:sanctum')->post('/logout', [AuthenticatedSessionController::class, 'destroy']);
+Route::middleware('auth:sanctum')->delete('/logout', [AuthenticatedSessionController::class, 'destroy']);
 // API reset password
 Route::middleware('api')->post('/password/forgot', [PasswordResetLinkController::class, 'store']);
 Route::middleware('api')->post('/register', [RegisteredUserController::class, 'store']);
@@ -245,30 +247,30 @@ Route::middleware('auth:sanctum')->group(function () {
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/instruktur', [InstructorController::class, 'index']);
     Route::post('/instruktur', [InstructorController::class, 'store']);
-    Route::put('/instruktur/{id}', [InstructorController::class, 'update']);
-    Route::delete('/instruktur', [InstructorController::class, 'destroy']);
+    Route::post('/instruktur/{instructor}', [InstructorController::class, 'update']);
+    Route::delete('/instruktur/{instructor}', [InstructorController::class, 'destroy']);
 });
 
 // API admin mayor
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/mayor', [MayorController::class, 'index']);
     Route::post('/mayor', [MayorController::class, 'store']);
-    Route::put('/mayor', [MayorController::class, 'update']);
-    Route::delete('/mayor', [MayorController::class, 'destroy']);
+    Route::put('/mayor/{mayor}', [MayorController::class, 'update']);
+    Route::delete('/mayor/{mayor}', [MayorController::class, 'destroy']);
 });
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/student', [StudentController::class, 'index']);
     Route::post('/student', [StudentController::class, 'store']);
-    Route::put('/student', [StudentController::class, 'update']);
+    Route::post('/student/{student}', [StudentController::class, 'update']);
     Route::delete('/student', [StudentController::class, 'destroy']);
 });
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/teacher', [TeacherController::class, 'index']);
     Route::post('/teacher', [TeacherController::class, 'store']);
-    Route::post('/teacher/{id}', [TeacherController::class, 'update']);
-    Route::delete('/teacher', [TeacherController::class, 'destroy']);
+    Route::put('/teacher/{id}', [TeacherController::class, 'update']);
+    Route::delete('/teacher/{teacher}', [TeacherController::class, 'destroy']);
 });
 
 Route::middleware('auth:sanctum')->group(function () {
@@ -277,7 +279,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/users', [UserController::class, 'store']);
     Route::patch('/user/active', [UserController::class, 'toggleActive']);
     Route::put('/users/{id}', [UserController::class, 'update']);
-    Route::delete('/users', [UserController::class, 'destroy']);
+    Route::delete('/users/{user}', [UserController::class, 'destroy']);
 });
 
 Route::middleware('auth:sanctum')->group(function () {

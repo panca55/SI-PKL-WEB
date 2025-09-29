@@ -332,10 +332,32 @@ class InternshipController extends Controller
         $student = Student::where('user_id', $user->id)->firstOrFail();
         $internship = Internship::where('student_id', $student->id)->firstOrFail();
 
-        // Validasi input
+        // Validasi input dengan kondisi untuk bentuk_kegiatan dan penugasan_pekerjaan
         $request->validate([
             'judul' => 'required|string|max:255',
             'foto_kegiatan' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:5120',
+            'isi' => 'required|string|min:10',
+            'category' => 'required|string|in:KOMPETENSI,LAINNYA',
+            'bentuk_kegiatan' => 'required_if:category,KOMPETENSI|string|max:255',
+            'penugasan_pekerjaan' => 'required_if:category,LAINNYA|string|max:255',
+        ], [
+            'judul.required' => 'Judul logbook wajib diisi.',
+            'judul.string' => 'Judul logbook harus berupa teks.',
+            'judul.max' => 'Judul logbook maksimal 255 karakter.',
+            'foto_kegiatan.image' => 'Bukti kegiatan harus berupa gambar.',
+            'foto_kegiatan.mimes' => 'Format gambar yang diperbolehkan: jpeg, png, jpg, gif, svg.',
+            'foto_kegiatan.max' => 'Ukuran gambar maksimal 5MB.',
+            'isi.required' => 'Isi logbook tidak boleh kosong.',
+            'isi.min' => 'Isi logbook minimal harus 10 karakter.',
+            'isi.string' => 'Isi logbook harus berupa teks.',
+            'category.required' => 'Kategori logbook wajib dipilih.',
+            'category.in' => 'Kategori logbook harus KOMPETENSI atau LAINNYA.',
+            'bentuk_kegiatan.required_if' => 'Bentuk kegiatan wajib diisi untuk kategori KOMPETENSI.',
+            'bentuk_kegiatan.string' => 'Bentuk kegiatan harus berupa teks.',
+            'bentuk_kegiatan.max' => 'Bentuk kegiatan maksimal 255 karakter.',
+            'penugasan_pekerjaan.required_if' => 'Penugasan pekerjaan wajib diisi untuk kategori LAINNYA.',
+            'penugasan_pekerjaan.string' => 'Penugasan pekerjaan harus berupa teks.',
+            'penugasan_pekerjaan.max' => 'Penugasan pekerjaan maksimal 255 karakter.',
         ]);
 
         $logbook = Logbook::findOrFail($id);
@@ -345,11 +367,13 @@ class InternshipController extends Controller
             $file = $request->file('foto_kegiatan');
             $originalFilename = $file->getClientOriginalName();
             $extension = $file->getClientOriginalExtension();
-            $filename = now()->format('Y-m-d') . '_' . $student->nama . '.' . $extension;
-            $path = $file->storeAs('public/foto_kegiatan', $filename);
+            $filename = now()->format('Y-m-d') . '_' . Str::slug($student->nama) . '_kegiatan.' . $extension;
+
+            // Simpan ke storage/app/public/foto-kegiatan (konsisten dengan logbookStore)
+            $path = $file->storeAs('foto-kegiatan', $filename, 'public');
 
             if ($logbook->foto_kegiatan) {
-                Storage::delete('public/foto-kegiatan/' . $logbook->foto_kegiatan);
+                Storage::delete('foto-kegiatan/' . $logbook->foto_kegiatan);
             }
             $logbook->foto_kegiatan = $filename;
         }
@@ -362,18 +386,23 @@ class InternshipController extends Controller
         $logbook->petugas = $request->input('petugas');
         $logbook->isi = $request->input('isi');
         $logbook->keterangan = $request->input('keterangan');
+
+        // Update data sesuai kategori
         if ($request->input('category') === 'KOMPETENSI') {
             $logbook->bentuk_kegiatan = $request->input('bentuk_kegiatan');
             $logbook->penugasan_pekerjaan = null;
-        }
-        if ($request->input('category') === 'LAINNYA') {
+        } elseif ($request->input('category') === 'LAINNYA') {
             $logbook->penugasan_pekerjaan = $request->input('penugasan_pekerjaan');
-            $logbook->bentuk_kegiatan = null; // kosongkan bentuk_kegiatan jika kategori LAINNYA
+            $logbook->bentuk_kegiatan = null;
         }
         // Simpan perubahan ke database
         $logbook->save();
         if ($request->wantsJson()) {
-            return response()->json(['message' => 'Logbook berhasil diperbarui.', 'logbook' => $logbook], 200);
+            return response()->json([
+                'message' => 'Logbook berhasil diperbarui.',
+                'logbook' => $logbook,
+                'bukti_kegiatan_url' => $logbook->foto_kegiatan ? asset('storage/foto-kegiatan/' . $logbook->foto_kegiatan) : null
+            ], 200);
         }
         return redirect()->route('student/internship.index')->with('success', 'Logbook berhasil diupdate.');
     }
@@ -387,7 +416,7 @@ class InternshipController extends Controller
 
         if ($logbook->foto_kegiatan) {
             // Pastikan path file benar
-            $filePath = 'public/foto-kegiatan' . $logbook->foto_kegiatan;
+            $filePath = 'foto-kegiatan/' . $logbook->foto_kegiatan;
 
             // Cek apakah file ada sebelum menghapus
             if (Storage::exists($filePath)) {
@@ -418,24 +447,52 @@ class InternshipController extends Controller
             ->first();
 
         if ($existingAbsence) {
-            // Validasi input termasuk 'isi' yang tidak boleh kosong
+            // Validasi input - foto_kegiatan WAJIB untuk API POST
             $request->validate([
                 'judul' => 'required|string|max:255',
                 'foto_kegiatan' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:5120',
-                'isi' => 'required|string|min:10',  // Tambahkan validasi untuk 'isi'
+                'isi' => 'required|string|min:10',
+                'category' => 'required|string|in:KOMPETENSI,LAINNYA',
+                'bentuk_kegiatan' => 'required_if:category,KOMPETENSI|string|max:255',
+                'penugasan_pekerjaan' => 'required_if:category,LAINNYA|string|max:255',
             ], [
+                'foto_kegiatan.required' => 'Bukti kegiatan (foto) wajib diupload.',
+                'foto_kegiatan.image' => 'Bukti kegiatan harus berupa gambar.',
+                'foto_kegiatan.mimes' => 'Format gambar yang diperbolehkan: jpeg, png, jpg, gif, svg.',
+                'foto_kegiatan.max' => 'Ukuran gambar maksimal 5MB.',
                 'isi.required' => 'Isi logbook tidak boleh kosong.',
                 'isi.min' => 'Isi logbook minimal harus 10 karakter.',
+                'category.required' => 'Kategori logbook wajib dipilih.',
+                'category.in' => 'Kategori logbook harus KOMPETENSI atau LAINNYA.',
+                'bentuk_kegiatan.required_if' => 'Bentuk kegiatan wajib diisi untuk kategori KOMPETENSI.',
+                'bentuk_kegiatan.string' => 'Bentuk kegiatan harus berupa teks.',
+                'bentuk_kegiatan.max' => 'Bentuk kegiatan maksimal 255 karakter.',
+                'penugasan_pekerjaan.required_if' => 'Penugasan pekerjaan wajib diisi untuk kategori LAINNYA.',
+                'penugasan_pekerjaan.string' => 'Penugasan pekerjaan harus berupa teks.',
+                'penugasan_pekerjaan.max' => 'Penugasan pekerjaan maksimal 255 karakter.',
             ]);
 
             if ($request->hasFile('foto_kegiatan')) {
                 $file = $request->file('foto_kegiatan');
                 $originalFilename = $file->getClientOriginalName();
                 $extension = $file->getClientOriginalExtension();
-                $filename = $currentDate . '_' . $student->nama . '.' . $extension;
-                $path = $file->storeAs('public/foto-kegiatan', $filename);
+                $filename = $currentDate . '_' . Str::slug($student->nama) . '_kegiatan.' . $extension;
+
+                // Simpan ke storage/app/public/foto-kegiatan
+                $path = $file->storeAs('foto-kegiatan', $filename, 'public');
+
+                if (!$path) {
+                    if ($request->wantsJson()) {
+                        return response()->json(['message' => 'Gagal menyimpan bukti kegiatan.'], 500);
+                    }
+                    return redirect()->route('student/internship.index')->with('error', 'Gagal menyimpan bukti kegiatan.');
+                }
             } else {
-                return redirect()->route('student/internship.index')->with('error', 'Gagal mengunggah foto.');
+                // Ini seharusnya tidak pernah terjadi karena validasi required
+                if ($request->wantsJson()) {
+                    return response()->json(['message' => 'Bukti kegiatan wajib diupload.'], 422);
+                }
+                return redirect()->route('student/internship.index')->with('error', 'Bukti kegiatan wajib diupload.');
             }
 
             // Inisialisasi data logbook
@@ -463,7 +520,11 @@ class InternshipController extends Controller
 
             Logbook::create($logbookData);
             if ($request->wantsJson()) {
-                return response()->json(['message' => 'Logbook berhasil disimpan.', 'absent' => $logbookData], 200);
+                return response()->json([
+                    'message' => 'Logbook berhasil disimpan.',
+                    'logbook' => $logbookData,
+                    'bukti_kegiatan_url' => asset('storage/foto-kegiatan/' . $filename)
+                ], 201);
             }
 
             return redirect()->route('student/internship.index')->with('success', 'Logbook berhasil disimpan.');

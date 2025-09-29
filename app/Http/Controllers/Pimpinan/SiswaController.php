@@ -84,8 +84,9 @@ class SiswaController extends Controller
             $summary['percentage'] = round(($summary['hadir'] / $workDays) * 100);
         }
         if (request()->wantsJson()) {
+            $email = $internship->student->user ? $internship->student->user->email : null;
             $internship->summary = $summary;
-            $internship->student->user->email;
+            $internship->student_email = $email;
             return response()->json($internship);
         }
         return view('pages.pimpinan.siswa-pkl.show', compact(
