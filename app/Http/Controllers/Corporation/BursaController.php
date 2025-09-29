@@ -21,8 +21,8 @@ class BursaController extends Controller
         $user = Auth::user();
         $corporation = Corporation::where('user_id', $user->id)->firstOrFail();
         $jobs = JobMarket::where('corporation_id', $corporation->id)->get();
-        if(request()->wantsJson()){
-            return response()->json(['jobs'=>$jobs]);
+        if (request()->wantsJson()) {
+            return response()->json(['jobs' => $jobs]);
         }
         return view('pages.corporation.bursa.index', compact('jobs'));
     }
@@ -54,6 +54,7 @@ class BursaController extends Controller
         $user = Auth::user();
         $corporation = Corporation::where('user_id', $user->id)->firstOrFail();
         $currentDate = Carbon::now()->toDateString();
+        $filename = null;
 
         if ($request->hasFile('foto')) {
             $file = $request->file('foto');
@@ -78,8 +79,8 @@ class BursaController extends Controller
         ];
 
         JobMarket::create($jobData);
-        if($request->wantsJson()){
-            return response()->json(['message' =>'Lowongan berhasil disimpan']);
+        if ($request->wantsJson()) {
+            return response()->json(['message' => 'Lowongan berhasil disimpan']);
         }
         return redirect()->route('corporation/bursa.index')->with('success', 'Lowongan berhasil disimpan.');
     }
@@ -142,8 +143,8 @@ class BursaController extends Controller
         $job->contact_email = $request->input('contact_email');
         // Simpan perubahan ke database
         $job->save();
-        if($request->wantsJson()){
-            return response()->json(['message'=>'Lowongan berhasil diupdate','job'=>$job]);
+        if ($request->wantsJson()) {
+            return response()->json(['message' => 'Lowongan berhasil diupdate', 'job' => $job]);
         }
 
         return redirect()->route('corporation/bursa.index')->with('success', 'Lowongan berhasil diupdate.');
@@ -161,8 +162,8 @@ class BursaController extends Controller
         }
 
         $job->delete();
-        if(request()->wantsJson()){
-            return response()->json(['message'=>'Data lowongan berhasil dihapus']);
+        if (request()->wantsJson()) {
+            return response()->json(['message' => 'Data lowongan berhasil dihapus']);
         }
 
         return redirect()->route('corporation/bursa.index')->with('success', 'Data Lowongan berhasil dihapus.');
