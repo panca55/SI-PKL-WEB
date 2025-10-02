@@ -43,7 +43,7 @@
                         <tr>
                             <th scope="row">{{ $loop->iteration }}</th>
                             <td>{{ $instructor->nip }}</td>
-                            <td>{{ $instructor->user->email }}</td>
+                            <td>{{ $instructor->user ? $instructor->user->email : 'N/A' }}</td>
                             <td>{{ $instructor->corporation->nama }}</td>
                             <td>{{ $instructor->nama }}</td>
                             <td>{{ $instructor->jenis_kelamin }}</td>

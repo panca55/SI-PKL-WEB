@@ -554,6 +554,14 @@ class InternshipController extends Controller
         $weeks = $this->getWeeks($startDate, $endDate);
         $months = $this->getMonths($startDate, $endDate);
 
+        if (request()->wantsJson()) {
+            return response()->json([
+                'attendances' => $attendances,
+                'weeks' => $weeks,
+                'months' => $months
+            ], 200);
+        }
+
         return view('pages.student.internship.attendance', compact('attendances', 'weeks', 'months'));
     }
 

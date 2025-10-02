@@ -10,6 +10,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
 class ProfileController extends Controller
@@ -129,36 +130,70 @@ class ProfileController extends Controller
     /**
      * Update the specified profile.
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, $studentId)
     {
-        $user = User::findOrFail($id);
+        Log::info('Update request data:', $request->all()); // Debug: Check what data is received
+        Log::info('Update request files:', $request->allFiles()); // Debug: Check uploaded files
+
+        $student = Student::findOrFail($studentId);
+        $user = User::findOrFail($student->user_id);
 
         $request->validate([
-            'username' => 'required|string|max:255|unique:users,name,' . $user->id,
-            'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
+            'username' => 'sometimes|required|string|max:255|unique:users,name,' . $user->id,
+            'email' => 'sometimes|required|string|email|max:255|unique:users,email,' . $user->id,
             'password' => 'nullable|string|min:8|confirmed',
-            'foto' => 'image|file|max:2048',
+            'foto' => 'nullable|image|file|max:2048',
+            'nama' => 'required|string|max:255',
+            'mayor_id' => 'required|exists:mayors,id',
+            'tahun_masuk' => 'nullable|string|max:255',
+            'jenis_kelamin' => 'nullable|string|in:PRIA,WANITA',
+            'tempat_lahir' => 'nullable|string|max:255',
+            'tanggal_lahir' => 'nullable|date',
+            'alamat_siswa' => 'nullable|string|max:500',
+            'alamat_ortu' => 'nullable|string|max:500',
+            'hp_siswa' => 'nullable|string|max:20',
+            'hp_ortu' => 'nullable|string|max:20',
         ]);
 
-        $user->name = $request->username;
-        $user->email = $request->email;
-
+        // Update user data only if provided
+        if ($request->has('username')) {
+            $user->name = $request->username;
+        }
+        if ($request->has('email')) {
+            $user->email = $request->email;
+        }
         if ($request->filled('password')) {
             $user->password = Hash::make($request->password);
         }
         $user->save();
 
-        $student = Student::where('user_id', $user->id)->firstOrFail();
+        // Update student data
         $student->nama = $request->nama;
         $student->mayor_id = $request->mayor_id;
-        $student->tahun_masuk = $request->tahun_masuk;
-        $student->jenis_kelamin = $request->jenis_kelamin;
-        $student->tempat_lahir = $request->tempat_lahir;
-        $student->tanggal_lahir = $request->tanggal_lahir;
-        $student->alamat_siswa = $request->alamat_siswa;
-        $student->alamat_ortu = $request->alamat_ortu;
-        $student->hp_ortu = $request->hp_ortu;
-        $student->hp_siswa = $request->hp_siswa;
+        if ($request->has('tahun_masuk')) {
+            $student->tahun_masuk = $request->tahun_masuk;
+        }
+        if ($request->has('jenis_kelamin')) {
+            $student->jenis_kelamin = $request->jenis_kelamin;
+        }
+        if ($request->has('tempat_lahir')) {
+            $student->tempat_lahir = $request->tempat_lahir;
+        }
+        if ($request->has('tanggal_lahir')) {
+            $student->tanggal_lahir = $request->tanggal_lahir;
+        }
+        if ($request->has('alamat_siswa')) {
+            $student->alamat_siswa = $request->alamat_siswa;
+        }
+        if ($request->has('alamat_ortu')) {
+            $student->alamat_ortu = $request->alamat_ortu;
+        }
+        if ($request->has('hp_siswa')) {
+            $student->hp_siswa = $request->hp_siswa;
+        }
+        if ($request->has('hp_ortu')) {
+            $student->hp_ortu = $request->hp_ortu;
+        }
 
         if ($request->hasFile('foto')) {
             if ($student->foto) {
@@ -169,7 +204,7 @@ class ProfileController extends Controller
             $filename = $cleanName . '_' . time() . '.' . $file->getClientOriginalExtension();
             $file->storeAs('public/students-images', $filename);
             $student->foto = $filename;
-        } elseif ($request->oldImage) {
+        } elseif ($request->has('oldImage')) {
             $student->foto = $request->oldImage;
         }
 
@@ -188,7 +223,7 @@ class ProfileController extends Controller
     public function destroy($id)
     {
         $user = Auth::user();
-        $student = Student::where('user_id', $user->$id)->firstOrFail();
+        $student = Student::where('user_id', $user->id)->firstOrFail();
 
         if ($student->foto) {
             Storage::delete('public/students-images/' . $student->foto);

@@ -7,6 +7,8 @@ use App\Models\Corporation;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 use Cviebrock\EloquentSluggable\Services\SlugService;
 
 class CorporationController extends Controller
@@ -235,14 +237,30 @@ class CorporationController extends Controller
      */
     public function destroy(Corporation $corporation)
     {
-        if ($corporation->image) {
-            Storage::delete($corporation->image);
+        // Delete related records first to avoid foreign key constraints
+        $corporation->instructor()->delete();
+        $corporation->jobmarket()->delete();
+        $corporation->internship()->delete();
+        $corporation->feedback()->delete();
+
+        if ($corporation->foto) {
+            Storage::delete($corporation->foto);
         }
 
-        $corporation->delete();
+        Log::info('Deleting corporation: ' . $corporation->id);
+        Log::info('Corporation exists: ' . $corporation->exists);
+        try {
+            $result = DB::table('corporations')->where('id', $corporation->id)->delete();
+            Log::info('Delete result: ' . $result);
+        } catch (\Exception $e) {
+            Log::error('Delete failed: ' . $e->getMessage());
+            $result = false;
+        }
+
         if (request()->wantsJson()) {
             return response()->json([
                 'message' => 'Data perusahaan berhasil dihapus',
+                'deleted' => $result,
             ], 200);
         }
         return redirect()->route('admin/corporation.index')->with('success', 'Data perusahaan berhasil dihapus.');

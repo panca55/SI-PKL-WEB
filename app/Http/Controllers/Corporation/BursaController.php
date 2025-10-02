@@ -44,6 +44,9 @@ class BursaController extends Controller
 
         // Mengirimkan pesan sukses
         $message = $job->status ? 'diaktifkan' : 'dinonaktifkan';
+        if (request()->wantsJson()) {
+            return response()->json(['message' => "Lowongan berhasil $message", 'job' => $job]);
+        }
         return redirect()->route('corporation/bursa.index')->with('success', "Lowongan berhasil $message.");
     }
     /**
@@ -51,6 +54,18 @@ class BursaController extends Controller
      */
     public function store(Request $request)
     {
+        $request->validate([
+            'judul' => 'required',
+            'deskripsi' => 'required',
+            'persyaratan' => 'required',
+            'jenis_pekerjaan' => 'required|in:Full-time,Part-time,Magang',
+            'lokasi' => 'required',
+            'rentang_gaji' => 'required',
+            'batas_pengiriman' => 'required|date',
+            'contact_email' => 'required|email',
+            'foto' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+        ]);
+
         $user = Auth::user();
         $corporation = Corporation::where('user_id', $user->id)->firstOrFail();
         $currentDate = Carbon::now()->toDateString();
@@ -91,6 +106,9 @@ class BursaController extends Controller
     public function show($id)
     {
         $job = JobMarket::findOrFail($id);
+        if (request()->wantsJson()) {
+            return response()->json(['job' => $job]);
+        }
         return view('pages.corporation.bursa.show', compact('job'));
     }
 
@@ -101,6 +119,9 @@ class BursaController extends Controller
     {
         $job = JobMarket::findOrFail($id);
         $works = JobMarket::WORKS;
+        if (request()->wantsJson()) {
+            return response()->json(['job' => $job, 'works' => $works]);
+        }
         return view('pages.corporation.bursa.edit', compact('job', 'works'));
     }
 

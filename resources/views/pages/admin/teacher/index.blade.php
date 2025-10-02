@@ -48,7 +48,7 @@
                         <tr>
                             <th scope="row">{{ $loop->iteration }}</th>
                             <td>{{ $teacher->nip }}</td>
-                            <td>{{ $teacher->user->email }}</td>
+                            <td>{{ $teacher->user ? $teacher->user->email : 'N/A' }}</td>
                             <td>{{ $teacher->nama }}</td>
                             <td>{{ $teacher->jenis_kelamin }}</td>
                             <td>{{ $teacher->golongan }}</td>
@@ -63,8 +63,7 @@
                                     alt="{{ $teacher->nama }}" width="50"></td>
                             <td>
                                 <div class="dropdown">
-                                    <button type="button" class="btn p-0 dropdown-toggle hide-arrow"
-                                        data-bs-toggle="dropdown">
+                                    <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
                                         <i class="bx bx-dots-vertical-rounded"></i>
                                     </button>
                                     <div class="dropdown-menu">
@@ -89,8 +88,7 @@
                                         <p>Are you sure to delete?</p>
                                     </div>
                                     <div class="modal-footer">
-                                        <button type="button" class="btn btn-secondary"
-                                            data-bs-dismiss="modal">Cancel</button>
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                                         <form action="{{ route('admin/teacher.destroy', $teacher) }}" method="POST">
                                             @csrf
                                             @method('DELETE')

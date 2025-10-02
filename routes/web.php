@@ -7,6 +7,8 @@ use App\Http\Controllers\Corporation\ProfileController as CorporationProfileCont
 use App\Http\Controllers\HomeController;
 use App\Models\Information;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Http\Response;
 
 /*
 |--------------------------------------------------------------------------
@@ -139,4 +141,24 @@ Route::prefix('pimpinan')
 Route::get('/profile/checkSlug', [CorporationProfileController::class, 'checkSlug'])->middleware('auth');
 Route::get('/corporation/checkSlug', [CorporationController::class, 'checkSlug'])->middleware('auth');
 Route::get('/bursa/checkSlug', [BursaController::class, 'checkSlug'])->middleware('auth');
+
+// Route for serving storage files with CORS
+Route::get('/storage/public/{path}', function ($path) {
+    Log::info('Serving storage file: ' . $path);
+    $fullPath = storage_path('app/public/' . $path);
+    Log::info('Full path: ' . $fullPath);
+    Log::info('File exists: ' . (file_exists($fullPath) ? 'yes' : 'no'));
+    if (!file_exists($fullPath)) {
+        abort(404);
+    }
+    $mime = mime_content_type($fullPath);
+    $content = file_get_contents($fullPath);
+    return \Illuminate\Support\Facades\Response::make($content, 200, [
+        'Access-Control-Allow-Origin' => '*',
+        'Access-Control-Allow-Methods' => 'GET',
+        'Access-Control-Allow-Headers' => 'Content-Type',
+        'Content-Type' => $mime,
+    ]);
+})->where('path', '.*')->withoutMiddleware([\Illuminate\Http\Middleware\HandleCors::class, \Illuminate\Session\Middleware\StartSession::class, \Illuminate\View\Middleware\ShareErrorsFromSession::class, \Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class]);
+
 require __DIR__ . '/auth.php';

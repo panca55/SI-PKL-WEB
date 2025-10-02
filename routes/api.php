@@ -168,7 +168,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/siswa', [ProfileController::class, 'dashboard']); // Get profile
     Route::get('/profil/siswa', [ProfileController::class, 'index']); // Get profile
     Route::post('/profil/siswa', [ProfileController::class, 'store']); // Create profile
-    Route::put('/profil/siswa/{id}', [ProfileController::class, 'update']); // Update profile
+    Route::put('/profil/siswa/{studentId}', [ProfileController::class, 'update']); // Update profile
     Route::delete('/profil/siswa/{id}', [ProfileController::class, 'destroy']); // Delete profile
     Route::get('/profil/create', [ProfileController::class, 'create']); // GET: Data untuk membuat logbook
 });
@@ -177,6 +177,7 @@ Route::middleware('auth:sanctum')->group(function () {
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/intern', [StudentInternshipController::class, 'index']);
     Route::post('/intern', [StudentInternshipController::class, 'store']);
+    Route::get('/intern/attendance-detail', [StudentInternshipController::class, 'attendanceDetail']);
     Route::get('/intern/{id}', [StudentInternshipController::class, 'show']);
     Route::put('/intern/edit/{id}', [StudentInternshipController::class, 'edit']);
     Route::put('/intern/update/{id}', [StudentInternshipController::class, 'update']);
@@ -224,7 +225,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/korporat', [CorporationController::class, 'store']);
     Route::put('/korporat/edit/{id}', [CorporationController::class, 'edit']);
     Route::put('/korporat/update/{id}', [CorporationController::class, 'update']);
-    Route::delete('/korporat/{id}', [CorporationController::class, 'destroy']);
+    Route::delete('/korporat/{corporation}', [CorporationController::class, 'destroy']);
 });
 
 Route::middleware('auth:sanctum')->group(function () {
@@ -285,8 +286,12 @@ Route::middleware('auth:sanctum')->group(function () {
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/bursa', [BursaController::class, 'index']);
     Route::post('/bursa', [BursaController::class, 'store']);
+    Route::get('/bursa/{id}', [BursaController::class, 'show']);
+    Route::get('/bursa/{id}/edit', [BursaController::class, 'edit']);
     Route::put('/bursa/{id}', [BursaController::class, 'update']);
+    Route::patch('/bursa/{id}/toggle-active', [BursaController::class, 'toggleActive']);
     Route::delete('/bursa/{id}', [BursaController::class, 'destroy']);
+    Route::post('/bursa/check-slug', [BursaController::class, 'checkSlug']);
 });
 
 Route::middleware('auth:sanctum')->group(function () {

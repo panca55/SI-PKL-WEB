@@ -97,7 +97,7 @@
                         <tr>
                             <th>{{ $loop->iteration }}</th>
                             <td>{{ $student->nisn }}</td>
-                            <td>{{ $student->user->email }}</td>
+                            <td>{{ $student->user? $student->user->email : 'N/A' }}</td>
                             <td>{{ $student->nama }}</td>
                             <td>{{ $student->mayor->department->nama }}</td>
                             <td>{{ $student->mayor->nama }}</td>
